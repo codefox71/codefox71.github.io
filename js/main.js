@@ -196,12 +196,57 @@ function parseProgram(txt){
 // --- UI wiring ---
 (function(){
   const cpu = new RelayCPU();
+  // CRT renderer
+  class CRTRenderer{
+    constructor(canvas){
+      this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.lines = []; this.maxLines = 18; this.bg = '#03120b';
+      this.font = '16px ui-monospace, Menlo, Monaco, monospace';
+      this.color = '#8bffb8';
+      this.phosphor = 0.9;
+      this.anim = null;
+      this.draw();
+    }
+    write(text){
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      for(const l of lines){ this.lines.push(l); }
+      while(this.lines.length > this.maxLines) this.lines.shift();
+      this.draw();
+    }
+    clear(){ this.lines = []; this.draw(); }
+    draw(){
+      const c = this.canvas, ctx = this.ctx;
+      const w = c.width, h = c.height;
+      ctx.clearRect(0,0,w,h);
+      // background gradient / vignette
+      const g = ctx.createLinearGradient(0,0,0,h); g.addColorStop(0,this.bg); g.addColorStop(1,'#02100b');
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      // slight curvature overlay
+      ctx.beginPath(); ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.ellipse(w/2,h/2,w*0.98,h*0.98,0,0,Math.PI*2); ctx.fill();
+      // scanlines
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      for(let y=0;y<h;y+=2){ ctx.fillRect(0,y,w,1); }
+      // phosphor glow and text
+      ctx.font = this.font; ctx.textBaseline = 'top';
+      const lineHeight = Math.floor(h / this.maxLines);
+      for(let i=0;i<this.lines.length;i++){
+        const y = 8 + i*lineHeight;
+        const txt = this.lines[i];
+        // glow
+        ctx.fillStyle = 'rgba(140,255,184,0.06)'; ctx.fillText(txt, 12, y);
+        ctx.fillStyle = this.color; ctx.fillText(txt, 12, y);
+      }
+      // subtle vignette
+      const vg = ctx.createLinearGradient(0,0,0,h); vg.addColorStop(0,'rgba(0,0,0,0.2)'); vg.addColorStop(0.5,'transparent'); vg.addColorStop(1,'rgba(0,0,0,0.3)'); ctx.fillStyle = vg; ctx.fillRect(0,0,w,h);
+    }
+  }
   const accVal = document.getElementById('accVal');
   const memList = document.getElementById('memList');
   const regsEl = document.getElementById('regs');
   const consoleEl = document.getElementById('console');
   const serialOut = document.getElementById('serialOut');
   const relaysEl = document.getElementById('relays');
+  const crtCanvas = document.getElementById('crtCanvas');
+  const crt = crtCanvas ? new CRTRenderer(crtCanvas) : null;
 
   function render(){
     accVal.textContent = '0x'+cpu.acc.toString(16).toUpperCase();
@@ -255,6 +300,7 @@ function parseProgram(txt){
 
   cpu.onTick = (instr)=>{
     consoleEl.textContent = (instr? instr.raw : '') + '\n' + consoleEl.textContent;
+    if(crt) crt.write(instr? instr.raw : '');
     render();
   }
 
