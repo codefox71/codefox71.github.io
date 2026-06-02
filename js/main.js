@@ -11,6 +11,7 @@ class RelayCPU {
     this.onTick = null;
     this.audioCtx = null;
     this.soundEnabled = true;
+    this.volume = 0.8;
   }
 
   reset(){
@@ -141,7 +142,7 @@ class RelayCPU {
       nb.connect(nf);
 
       // mix
-      const mix = ctx.createGain(); mix.gain.value = 0.6;
+      const mix = ctx.createGain(); mix.gain.value = 0.6 * (this.volume || 1);
       g.connect(mix); rg.connect(mix); nf.connect(mix);
       mix.connect(ctx.destination);
 
@@ -299,6 +300,10 @@ CLR
     try{ if(!cpu.audioCtx) cpu.audioCtx = new (window.AudioContext||window.webkitAudioContext)(); await cpu.audioCtx.resume(); console.log('Audio ready'); }
     catch(e){console.log('Audio blocked')}
   });
+
+  // volume control
+  const volEl = document.getElementById('volume');
+  if(volEl){ volEl.addEventListener('input', (e)=>{ cpu.volume = parseFloat(e.target.value || '0.8'); }); volEl.value = cpu.volume; }
 
   // initial render + sample program
   document.getElementById('program').value = `; Example program\nMVI A, 0x7\nWRB A\nMVI R1, 3\nADD R1\nWRB A`;
