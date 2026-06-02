@@ -10,6 +10,7 @@ class RelayCPU {
     this.relays = new Array(12).fill(false);
     this.onTick = null;
     this.audioCtx = null;
+    this.soundEnabled = true;
   }
 
   reset(){
@@ -112,26 +113,48 @@ class RelayCPU {
 
   pulseRelays(){
     for(let i=0;i<this.relays.length;i++) this.relays[i] = Math.random() > 0.6;
-    this.playClick();
+    this.playRelaySound(Math.random());
   }
-
-  // small relay "click" sound
-  playClick(){
+  playRelaySound(strength=0.8){
+    if(!this.soundEnabled) return;
     try{
       if(!this.audioCtx) this.audioCtx = new (window.AudioContext||window.webkitAudioContext)();
       const ctx = this.audioCtx;
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'square';
-      o.frequency.value = 1200 + Math.random()*800;
-      g.gain.value = 0.0001;
-      o.connect(g); g.connect(ctx.destination);
       const now = ctx.currentTime;
-      g.gain.setValueAtTime(0.0001, now);
-      g.gain.exponentialRampToValueAtTime(0.05, now+0.001);
-      g.gain.exponentialRampToValueAtTime(0.0001, now+0.09);
-      o.start(now); o.stop(now+0.1);
-    }catch(e){/* audio context may be blocked */}
+
+      // main click oscillator (fast pitch envelope)
+      const o = ctx.createOscillator(); o.type='square'; o.frequency.value = 1400 + (strength*1200);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.00001, now);
+      o.connect(g);
+
+      // mechanical resonance (sine, short)
+      const r = ctx.createOscillator(); r.type='sine'; r.frequency.value = 220 + Math.random()*80;
+      const rg = ctx.createGain(); rg.gain.setValueAtTime(0.00001, now);
+      r.connect(rg);
+
+      // subtle noise for mechanical clack
+      const bufferSize = 2*ctx.sampleRate; const noiseBuf = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = noiseBuf.getChannelData(0);
+      for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (Math.random()*0.6);
+      const nb = ctx.createBufferSource(); nb.buffer = noiseBuf; nb.loop = false;
+      const nf = ctx.createBiquadFilter(); nf.type='highpass'; nf.frequency.value=800;
+      nb.connect(nf);
+
+      // mix
+      const mix = ctx.createGain(); mix.gain.value = 0.6;
+      g.connect(mix); rg.connect(mix); nf.connect(mix);
+      mix.connect(ctx.destination);
+
+      // envelopes
+      g.gain.exponentialRampToValueAtTime(0.06 * (0.6+strength*0.6), now+0.002);
+      g.gain.exponentialRampToValueAtTime(0.00001, now+0.12);
+      rg.gain.exponentialRampToValueAtTime(0.02, now+0.005);
+      rg.gain.exponentialRampToValueAtTime(0.00001, now+0.18);
+
+      o.start(now); o.stop(now+0.12);
+      r.start(now); r.stop(now+0.18);
+      nb.start(now); nb.stop(now+0.12);
+    }catch(e){/* ignore audio errors */}
   }
 }
 
@@ -203,7 +226,31 @@ function parseProgram(txt){
       r.textContent = 'R'+(i+1);
       relaysEl.appendChild(r);
     })
+    // animate relays for tactile effect
+    setTimeout(()=>{
+      const nodes = relaysEl.querySelectorAll('.relay');
+      nodes.forEach((n,i)=>{
+        const on = cpu.relays[i];
+        if(on){ n.classList.add('on'); n.style.transform = `translateY(-2px) rotateZ(${(Math.random()-0.5)*2}deg)`; }
+        else { n.classList.remove('on'); n.style.transform = `translateY(0px) rotateZ(0deg)`; }
+      });
+    }, 20);
   }
+
+  // schematic modal and wiring
+  const schematicBtn = document.getElementById('schematicBtn');
+  const schematicModal = document.getElementById('schematicModal');
+  const schematicContainer = document.getElementById('schematicContainer');
+  const closeSchematic = document.getElementById('closeSchematic');
+  async function openSchematic(){
+    schematicModal.setAttribute('aria-hidden','false');
+    try{ const svg = await fetch('assets/schematic.svg').then(r=>r.text()); schematicContainer.innerHTML = svg; }
+    catch(e){ schematicContainer.textContent = 'Failed to load schematic.' }
+  }
+  function closeModal(){ schematicModal.setAttribute('aria-hidden','true'); }
+  schematicBtn.addEventListener('click', openSchematic);
+  closeSchematic.addEventListener('click', closeModal);
+  schematicModal.querySelector('.modal-backdrop').addEventListener('click', closeModal);
 
   cpu.onTick = (instr)=>{
     consoleEl.textContent = (instr? instr.raw : '') + '\n' + consoleEl.textContent;

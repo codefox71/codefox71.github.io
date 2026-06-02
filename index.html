@@ -14,6 +14,7 @@
     </div>
     <div class="panel-right">
       <button id="downloadBtn">Download Standalone</button>
+      <button id="schematicBtn">Schematic</button>
       <button id="powerBtn" class="red">Power</button>
     </div>
   </header>
@@ -78,5 +79,18 @@
   </main>
 
   <script src="js/main.js"></script>
+
+  <div id="schematicModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2>System Schematic</h2>
+        <button id="closeSchematic">Close</button>
+      </div>
+      <div class="modal-body">
+        <div id="schematicContainer" class="schematic-container">Loading schematic…</div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

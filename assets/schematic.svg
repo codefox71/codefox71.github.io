@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="metal" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f6f6f6" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#111" stop-opacity="0.6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  <rect width="100%" height="100%" fill="#071114"/>
+  <!-- title plate -->
+  <g transform="translate(40,30)">
+    <rect width="1120" height="70" rx="8" fill="url(#metal)" stroke="#000" stroke-opacity="0.4"/>
+    <text x="40" y="46" fill="#d3a14b" font-family="Georgia, serif" font-size="28">Bendix-15 Relay CPU — Schematic</text>
+  </g>
+
+  <!-- memory block -->
+  <g transform="translate(60,130)">
+    <rect width="220" height="220" rx="8" fill="#0c1414" stroke="#2b2b2b" filter="url(#shadow)"/>
+    <text x="18" y="30" fill="#cfe8e5" font-size="16">Memory (M0..M4)</text>
+    <!-- cells -->
+    <g transform="translate(18,50)">
+      <g fill="#071212">
+        <rect x="0" y="0" width="80" height="48" rx="6" stroke="#0b2b2b"/>
+        <rect x="0" y="60" width="80" height="48" rx="6" stroke="#0b2b2b"/>
+        <rect x="100" y="0" width="80" height="48" rx="6" stroke="#0b2b2b"/>
+        <rect x="100" y="60" width="80" height="48" rx="6" stroke="#0b2b2b"/>
+        <rect x="200" y="0" width="80" height="48" rx="6" stroke="#0b2b2b"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- registers -->
+  <g transform="translate(320,130)">
+    <rect width="220" height="120" rx="8" fill="#0c1414" stroke="#2b2b2b" filter="url(#shadow)"/>
+    <text x="18" y="30" fill="#cfe8e5" font-size="16">Registers (R0..R3)</text>
+    <g transform="translate(18,50)">
+      <rect x="0" y="0" width="64" height="48" rx="6" fill="#071212" stroke="#0b2b2b"/>
+      <rect x="80" y="0" width="64" height="48" rx="6" fill="#071212" stroke="#0b2b2b"/>
+      <rect x="160" y="0" width="64" height="48" rx="6" fill="#071212" stroke="#0b2b2b"/>
+    </g>
+  </g>
+
+  <!-- ALU -->
+  <g transform="translate(60,380)">
+    <rect width="480" height="140" rx="10" fill="#071414" stroke="#173030" filter="url(#shadow)"/>
+    <text x="18" y="30" fill="#cfe8e5" font-size="16">ALU (ADD, SUB, MUL, NAND, XOR)</text>
+    <g transform="translate(18,50)">
+      <circle cx="60" cy="40" r="32" fill="#0b2b2b" stroke="#063636"/>
+      <text x="48" y="46" font-size="14" fill="#9ee0d8">ALU</text>
+    </g>
+  </g>
+
+  <!-- Accumulator -->
+  <g transform="translate(580,200)">
+    <rect width="220" height="120" rx="8" fill="#081212" stroke="#183030" filter="url(#shadow)"/>
+    <text x="18" y="30" fill="#cfe8e5" font-size="16">Accumulator (A)</text>
+    <rect x="18" y="48" width="184" height="48" rx="6" fill="#041111" stroke="#073030"/>
+  </g>
+
+  <!-- Serial bus -->
+  <g transform="translate(320,320)">
+    <text x="0" y="0" fill="#9ee0d8" font-size="14">Serial Bus</text>
+    <path d="M10 12 C120 60, 260 60, 380 12" stroke="#6bd0c2" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="10" cy="12" r="6" fill="#6bd0c2"/>
+  </g>
+
+  <!-- wiring hints -->
+  <g stroke="#3fd3c5" stroke-width="2" fill="none" opacity="0.9">
+    <path d="M280 240 L320 240" />
+    <path d="M220 170 L340 170" />
+    <path d="M420 300 L520 260" />
+  </g>
+
+  <!-- legend / foot -->
+  <g transform="translate(40,720)">
+    <text x="0" y="0" fill="#9aa4a8" font-size="12">This schematic is a stylized illustration of the relay CPU layout: memory, registers, ALU, accumulator and serial bus wiring.</text>
+  </g>
+</svg>
